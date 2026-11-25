@@ -195,6 +195,7 @@ def installer():
     horo = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     sauvegarde = os.path.join(BACKUP_ROOT, "c5460_" + horo)
     manifeste = []
+    nouveaux = []            # cibles neuves (à supprimer à la réversion)
     for rel, src in sorted(cibles.items()):
         dst = os.path.join(JEU, "mods", rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -203,8 +204,12 @@ def installer():
             os.makedirs(os.path.dirname(b), exist_ok=True)
             shutil.copy2(dst, b)
             manifeste.append(("sauvegarde", rel, hashlib.md5(open(b, "rb").read()).hexdigest()[:12]))
+        else:
+            nouveaux.append(rel + "\n")
         shutil.copy2(src, dst)
         manifeste.append(("installe", rel, hashlib.md5(open(dst, "rb").read()).hexdigest()[:12]))
+    with open(os.path.join(sauvegarde, "nouveaux.txt"), "w", encoding="utf-8") as fh:
+        fh.writelines(nouveaux)
     with open(os.path.join(sauvegarde, "manifeste.txt"), "w", encoding="utf-8") as fh:
         for a, b, c in manifeste:
             fh.write("%-11s %s %s\n" % (a, b, c))
@@ -221,6 +226,15 @@ def reverter():
         sys.exit(1)
     d = sorted(subs)[-1]
     n = 0
+    # 1) supprime les fichiers cree par l'installation (nouveaux.txt)
+    neuf = os.path.join(d, "nouveaux.txt")
+    if os.path.exists(neuf):
+        for rel in open(neuf, encoding="utf-8").read().splitlines():
+            p = os.path.join(JEU, "mods", rel)
+            if os.path.exists(p):
+                os.remove(p)
+                n += 1
+    # 2) restaure les sauvegardes .avant
     for racine, _, fichiers in os.walk(d):
         for f in fichiers:
             if not f.endswith(".avant"):
