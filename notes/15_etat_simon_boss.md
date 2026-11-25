@@ -38,18 +38,19 @@ Légende : **[F]** vérifié fichier · **[T]** testé/validé outil · **[G]** 
 
 ## 5. Points ouverts
 
-- [ ] Lignes param 54600000 (NpcParam clone 54000000 hp/taupe/behaviorVariationId=54600 ; Think battleGoalID=546000 ; Behavior famille 254600000+k ; AtkParam 54600000+).
-- [ ] Bundle `gameparam` recompilé → `mods/param/gameparam/…` (backup `.bak` existant).
-- [ ] Install test : 4 archives + msb + bundle → `mods/` (tool `install_simon_boss.py`, backup dédié).
-- [ ] **Test In-Game #1 : apparition du modèle c5460** (spawn) — puis crash-log / rendu.
+- [x] Lignes param 54600000 (clone hôte validé ; familles **non** divergentes en phase A — variationId 53xxx conservée, familles 54600 pour phase attaques).
+- [x] Bundle `gameparam` recompilé + installé (backup `.bak` + manifeste).
+- [x] Install test 6 fichiers + MSB (tool `implantation_simon.py installer`, backups complets via `reverter`).
+- [x] **Boot in-game sain avec l'ensemble installé** (titre à +140 s, `obs_140.png`).
+- [ ] **Apparition du modèle c5460 en carte** — nécessite gameplay utilisateur (sauvegarde → m20_00_00_00 record `c7300_0000` aux coord (-828,118,642)) ; pas d'input clavier envoyé de mon côté.
 - [ ] Greffe du clip Simon slot `a000_003080` + évènements AttackBehavior TAE (phase 3).
-- [ ] Choix record/carte définitifs pour le spawn (testé : `c7300_0000`/`SIMON_SPAWN` sur m20_00_00_00).
-- [ ] HKB attaques (states AttackXXX) et famille Behavior → attaque exécutable par IA (phase 3-4).
+- [ ] Famille Behavior/Atk 54600 + HKB (states AttackXXX → attaque exécutable IA).
 - [ ] Incertitudes résiduelles : sib modèles, texbnd model-keyed vs name-keyed [H], entityID dupliqué du clone MSB (option `--entity-id`), 41 EMEVD LoR non décodés (non bloquant).
 
 ## 6. Prochaine étape immédiate
 
-ParamEdit posé → créer les lignes 54600000 → reemballeur bundle → `install_simon_boss.py` → **Test In-Game #1 apparition**.
+1. Vous (ou mode lecture utilisateur) : charger une sauvegarde, se rendre aux coordonnées du record → **voir apparaître Simon (modèle c5460)** ; si absence/crash : me renvoyer le crash.log.
+2. Côté outils (sans jeu) : `build_c5460.py anibnd --clip a000_003080_simon.hkx` + familles params d'attaque 54600 → signez le début de la phase 3.
 
 ## 7. Session implémentation — faits ajoutés (2026-11-25)
 
