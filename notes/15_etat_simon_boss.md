@@ -74,3 +74,20 @@ Légende : **[F]** vérifié fichier · **[T]** testé/validé outil · **[G]** 
 2. Crash #1 Scaleform : à surveiller (probabilité isolé/environnement ; observé seulement 1×).
 3. Phase suivante hors test : greffe clip Simon slot `a000_003080` (`build_c5460.py anibnd --clip …`), familles Behavior/Atk 54600, cmsgs/AttackXXX de l'HKB.
 4. Relecture biais des anciennes valeurs params (rang -1) dans notes 12-14.
+
+## 9. Relocalisation spawn → m11_01_00_00 (château d'Ashina)
+
+- Abandon spawn Temple m20 : fichier retiré de mods/ (purge) ; anciens cibles docs.
+- Choix carte : **m11_01_00_00** = bâtiment principal du château (indices file : stack
+  narratif y=1.66/32/54 avec records samurai residence/sickbed conversation NPC —
+  c5410/c5430/c5060/c5020 + c5430 even Isshin story) ; sol anchor = trio de records
+  debout y=54.00±0.04.
+- Spawn = **ADD** `SIMON_SPAWN` (exemplaire c5430_0000, entity -1, pos
+  **(-111.8, 54.0, 237.4)**, dist 3.0 m à c5430_0000 / 3.8 m à c5060_0001 / 9.9 m
+  c5060_0000) — records vanilla intacts (MsbPatch : diffs hors cibles 0).
+- Vérifs installés : models 40→41 (+c5460), ennemis 284→285, ligne conforme,
+  chr/param md5 **inchange**, m20 absent ; revert = `implantation_simon.py reverter`
+  (nouveaux.txt + .avant reconstruits dans c5460_20261125_215815).
+- Route assumée : idole **« Ashina Castle: Dojo »** (écran d'arrivée ≈ salle intérieure
+  étage y=54). [INCONNU] appartenance nom/idole exact — test utilisateur tranchera,
+  pivot immédiat possible (positions candidates m11_00 y≈-50 cour).

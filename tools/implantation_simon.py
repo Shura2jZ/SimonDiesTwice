@@ -45,10 +45,13 @@ DEFS_DIR = os.path.join(RACINE, "_work", "lor", "defs")
 PARAMEDIT = os.path.join(RACINE, "_work", "tools", "cs", "ParamEdit.exe")
 BACKUP_ROOT = os.path.join(RACINE, "_work", "mod_backup")
 
-# MSB de test : copie VANILLA retargetée (outil MsbPatch) puis installée
-MSB_MAP = "m20_00_00_00"           # carte du spawn de test
-MSB_WORK = os.path.join(WORK, "msb", "%s.msb.dcx" % MSB_MAP)      # copie vanilla
-MSB_WIP = os.path.join(WORK, "msb", "retarget.dcx")               # retarget c7300_0000
+# MSB de spawn : château d'Ashina (bâtiment principal, records debout à y≈54
+# = preuve de sol stable ; idole d'arrivée : Ashina Castle: Dojo).
+# m20 (Temple) = abandonné nettoyé à l'installation (fichier retiré de mods/).
+MSB_MAP = "m11_01_00_00"            # carte du spawn cible
+MSB_ANCIEN = "m20_00_00_00"         # install précédente à nettoyer
+EXEMPLAIRE = "c5430_0000"           # record debout même carte (struct NPC)
+POS = "-111.8,54.0,237.4"           # entre c5430_0000 (3.0 m) et c5060_0001 (3.8 m)
 
 REGI = [
     # Espace A (apparition) : clones IDENTIQUES du hôte — le pipeline
@@ -174,18 +177,23 @@ def _cibles():
 
 
 def installer():
-    """Recalcule le MSB retarget (vanilla → c5460) puis copie tout dans mods/,
-    chaque cible sauvegardée dans _work/mod_backup/c5460_<horodatage>/."""
-    # 1) MSB retarget fresh depuis la copie vanilla de travail
+    """Spawn c5460 = NOUVEAU record SIMON_SPAWN (add, exemplaire c5430_0000,
+    entity neutre -1) dans m11_01_00_00 — aucun record vanilla touché —
+    installation overlay avec sauvegarde systématique (.avant / nouveaux.txt)."""
+    # copie de travail vanilla (lecture seule) du jeu
+    vanilla = os.path.join(JEU, "map", "mapstudio", "%s.msb.dcx" % MSB_MAP)
+    MSB_WORK = os.path.join(WORK, "msb", "%s.msb.dcx" % MSB_MAP)
+    MSB_WIP = os.path.join(WORK, "msb", "spawn_c5460.dcx")
+    os.makedirs(os.path.dirname(MSB_WORK), exist_ok=True)
     if not os.path.exists(MSB_WORK):
-        log("ERREUR : copie MSB vanilla absente : %s" % MSB_WORK)
-        sys.exit(1)
+        shutil.copy2(vanilla, MSB_WORK)
     r = subprocess.run([
         os.path.join(RACINE, "_work", "tools", "cs", "MsbPatch.exe"),
-        "retarget", "--record", "c7300_0000", "--model", "c5460",
+        "add", "--record", "SIMON_SPAWN", "--model", "c5460",
         "--npc", "54600000", "--think", "54600000",
+        "--pos", POS, "--at-scale", EXEMPLAIRE, "--entity-id", "-1",
         "--in", MSB_WORK, "--out", MSB_WIP], capture_output=True, text=True)
-    log("MsbPatch retarget : %s" % (r.stdout.strip().splitlines() or r.stderr))
+    log("MsbPatch add : %s" % ((r.stdout + r.stderr).strip().splitlines()[-3:]))
     if r.returncode != 0 or not os.path.exists(MSB_WIP):
         log("ERREUR MsbPatch: " + r.stderr)
         sys.exit(1)
@@ -196,8 +204,23 @@ def installer():
     sauvegarde = os.path.join(BACKUP_ROOT, "c5460_" + horo)
     manifeste = []
     nouveaux = []            # cibles neuves (à supprimer à la réversion)
+    os.makedirs(sauvegarde, exist_ok=True)
+    # nettoyage : l'install spawn-précédent (m20) porte un nom hors cibles -> purgé
+    purge = os.path.join(JEU, "mods", "map", "mapstudio", "%s.msb.dcx" % MSB_ANCIEN)
+    if os.path.exists(purge):
+        os.remove(purge)
+        nouveaux.append(os.path.join("map", "mapstudio", "%s.msb.dcx" % MSB_ANCIEN) + "\n")
+        manifeste.append(("purge", MSB_ANCIEN, "install precedente"))
     for rel, src in sorted(cibles.items()):
         dst = os.path.join(JEU, "mods", rel)
+        # inchange = on ne touche ni le fichier ni son backup ("seulement
+        # les necessaires")
+        if os.path.exists(dst):
+            m_dst = hashlib.md5(open(dst, "rb").read()).hexdigest()
+            m_src = hashlib.md5(open(src, "rb").read()).hexdigest()
+            if m_dst == m_src:
+                manifeste.append(("inchange", rel, m_dst[:12]))
+                continue
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if os.path.exists(dst):
             b = os.path.join(sauvegarde, rel + ".avant")
