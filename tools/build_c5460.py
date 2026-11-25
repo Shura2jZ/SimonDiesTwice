@@ -77,6 +77,23 @@ def flver_simon_actuel():
     return open(chemin, "rb").read(), "_work/mod/c5400_mod.flver"
 
 
+def phase_texbnd():
+    """LoR livre c<id>.texbnd.dcx pour chaque boss autonome : le moteur peut
+    rechercher le bundle de textures par ID de modele. Clone octet-a-octet du
+    bundle Simon deja installe (prouve en jeu sur c5400) comme c5460.texbnd."""
+    src = os.path.join(JEU, "mods", "chr", "c5409.texbnd.dcx")
+    if not os.path.exists(src):
+        src = os.path.join(JEU, "chr", "c5409.texbnd.dcx")
+    data = open(src, "rb").read()
+    dst = os.path.join(SORTIE_DIR, "c5460.texbnd.dcx")
+    os.makedirs(SORTIE_DIR, exist_ok=True)
+    with open(dst, "wb") as fh:
+        fh.write(data)
+    log("=== phase texbnd : clone %s -> %s (%d o, md5 %s)"
+        % (src, dst, len(data), hashlib.md5(data).hexdigest()[:12]))
+    return dst
+
+
 def phase(kind, clip=None):
     chemin_src = os.path.join(JEU, "chr", "%s.%s.dcx" % (ANCIEN, kind))
     brut = soulsutil.load(chemin_src)
@@ -184,9 +201,12 @@ def main():
         phase("behbnd")
     elif quoi == "anibnd":
         phase("anibnd", clip)
+    elif quoi == "texbnd":
+        phase_texbnd()
     elif quoi == "tout":
         for k in ("chrbnd", "behbnd", "anibnd"):
             phase(k)
+        phase_texbnd()
     elif quoi == "verifier":
         for k in ("chrbnd", "behbnd", "anibnd"):
             p = os.path.join(SORTIE_DIR, "%s.%s.dcx" % (NOUVEAU, k))
