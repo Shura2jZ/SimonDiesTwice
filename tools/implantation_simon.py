@@ -202,9 +202,11 @@ def installer():
     if not os.path.exists(MSB_WORK):
         shutil.copy2(vanilla, MSB_WORK)
     # chaîne : SIMON_SPAWN (dojo) -> PROBE_VANILLA (mêmes coord.) -> SIMON_ROOF (toit)
+    # Pas de Simon dans le dojo/interieur : uniquement (1) la sonde vanilla de
+    # diagnostic aux COORDONNEES exactes de l'ancien Simon (meme test controle)
+    # et (2) SIMON_ROOF, emplacement final sur le toit de Genichiro.
     etapes = [
-        ("SIMON_SPAWN", "c5460", "54600000", "54600000", POS, ENTITE, EXEMPLAIRE, MSB_WIP + ".e1"),
-        (PROBE_NOM, PROBE_MODELE, str(PROBE_NPC), str(PROBE_THINK), POS, PROBE_ENTITE, EXEMPLAIRE, MSB_WIP + ".e2"),
+        (PROBE_NOM, PROBE_MODELE, str(PROBE_NPC), str(PROBE_THINK), POS, PROBE_ENTITE, EXEMPLAIRE, MSB_WIP + ".e1"),
         ("SIMON_ROOF", "c5460", "54600000", "54600000", TOIT_POS, TOIT_ENTITE, EXEMPLAIRE, MSB_WIP),
     ]
     entree = MSB_WORK
