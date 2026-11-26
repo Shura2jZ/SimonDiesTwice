@@ -43,6 +43,7 @@ CHR_SRC = os.path.join(WORK, "chr")
 BUNDLE_SRC = os.path.join(JEU, "mods", "param", "gameparam", "gameparam.parambnd.dcx")
 DEFS_DIR = os.path.join(RACINE, "_work", "lor", "defs")
 PARAMEDIT = os.path.join(RACINE, "_work", "tools", "cs", "ParamEdit.exe")
+EVD = os.path.join(RACINE, "_work", "tools", "cs", "EvdPatch.exe")
 BACKUP_ROOT = os.path.join(RACINE, "_work", "mod_backup")
 
 # MSB de spawn : château d'Ashina (bâtiment principal, records debout à y≈54
@@ -50,22 +51,23 @@ BACKUP_ROOT = os.path.join(RACINE, "_work", "mod_backup")
 # m20 (Temple) = abandonné nettoyé à l'installation (fichier retiré de mods/).
 MSB_MAP = "m11_01_00_00"            # carte du spawn cible
 MSB_ANCIEN = "m20_00_00_00"         # install précédente à nettoyer
-EXEMPLAIRE = "c5430_0000"           # record debout même carte (struct NPC)
-POS = "-111.8,54.0,237.4"           # entre c5430_0000 (3.0 m) et c5060_0001 (3.8 m)
-# EntityID DUTIFER, jamais -1 : 284/285 ennemis vanilla en portent ; -1 (bogue
-# d'ecriture anterieur) = record jamais instancie en jeu -> invisible.
-# Valeur libre dans la carte (max observe 1120623, outil MsbForensics --max-entity).
-ENTITE = 1120624
+EXEMPLAIRE = "c1001_0009"          # garde vanilla JINXE a l'entree TOUR LOOKOUT : record
+                                   # evidentement visible en jeu (idole meme zone)
+# Test A, zone Tour Lookout (idole 天守展望階), plancher commun y=54.15 :
+# calcul de degagement (objets + ennemis du dump) -> libre et distincts.
+PROBE_POS = "-119.5,54.15,237.5"    # sonde : 4.6 m de l'idole, degagement 4.60 m
+# EntityID UNIQUE, jamais -1 et jamais en doublon : 284/284 ennemis vanilla
+# portent un id propre (max observe 1120623 ; ids libres >= 1120624).
 # Test B : sonde meme structure, modele vanilla visible de la salle (c1001)
 PROBE_NOM    = "PROBE_VANILLA"
 PROBE_MODELE = "c1001"
 PROBE_NPC    = 10010000
 PROBE_THINK  = 10010000
 PROBE_ENTITE = 1120625
-# Toit de Genichiro (preuve : tuiles m015321/22/32 y=61.6, bandes u=x+z
-# 109..139 x v=x-z -342..-360 -> plateau ~21x13 m centre (-113.4, 61.6, 237.6))
-TOIT_POS   = "-113.4,61.6,237.6"
-TOIT_ENTITE = 1120626
+# Simon meme zone, position distincte de la sonde.
+SIMON_POS   = "-116.0,54.15,240.8"   # 9.2 m de l'idole, 4.8 m de la sonde,
+                                     # degagement 5.80 m, sol = plancher 54.15
+SIMON_ENTITE = 1120626
 
 REGI = [
     # Espace A (apparition) : clones IDENTIQUES du hôte — le pipeline
@@ -191,23 +193,22 @@ def _cibles():
 
 
 def installer():
-    """Spawn c5460 = NOUVEAU record SIMON_SPAWN (add, exemplaire c5430_0000,
-    entity neutre -1) dans m11_01_00_00 — aucun record vanilla touché —
-    installation overlay avec sauvegarde systématique (.avant / nouveaux.txt)."""
+    """2 records NOUVEAUX dans m11_01_00_00 (Tour Lookout, sans record vanilla
+    touche) + activation EMEVD (methodes LoR) — installation overlay avec
+    sauvegarde systematique (.avant / nouveaux.txt + manifeste)."""
     # copie de travail vanilla (lecture seule) du jeu
     vanilla = os.path.join(JEU, "map", "mapstudio", "%s.msb.dcx" % MSB_MAP)
     MSB_WORK = os.path.join(WORK, "msb", "%s.msb.dcx" % MSB_MAP)
     MSB_WIP = os.path.join(WORK, "msb", "spawn_c5460.dcx")
     os.makedirs(os.path.dirname(MSB_WORK), exist_ok=True)
-    if not os.path.exists(MSB_WORK):
-        shutil.copy2(vanilla, MSB_WORK)
-    # chaîne : SIMON_SPAWN (dojo) -> PROBE_VANILLA (mêmes coord.) -> SIMON_ROOF (toit)
-    # Pas de Simon dans le dojo/interieur : uniquement (1) la sonde vanilla de
-    # diagnostic aux COORDONNEES exactes de l'ancien Simon (meme test controle)
-    # et (2) SIMON_ROOF, emplacement final sur le toit de Genichiro.
+    # chaîne TOUJOURS repartie du MSB VANILLA (copie renouvelee) : aucun
+    # accumulation de records d'une session a l'autre.
+    shutil.copy2(vanilla, MSB_WORK)
+    # Tour Lookout (idole) : deux records distincts, meme exemplaire visible,
+    # positions calculees libres ; SUJET = apparition, plus de test toit.
     etapes = [
-        (PROBE_NOM, PROBE_MODELE, str(PROBE_NPC), str(PROBE_THINK), POS, PROBE_ENTITE, EXEMPLAIRE, MSB_WIP + ".e1"),
-        ("SIMON_ROOF", "c5460", "54600000", "54600000", TOIT_POS, TOIT_ENTITE, EXEMPLAIRE, MSB_WIP),
+        (PROBE_NOM, PROBE_MODELE, str(PROBE_NPC), str(PROBE_THINK), PROBE_POS, PROBE_ENTITE, EXEMPLAIRE, MSB_WIP + ".e1"),
+        ("SIMON_LOOKOUT", "c5460", "54600000", "54600000", SIMON_POS, SIMON_ENTITE, EXEMPLAIRE, MSB_WIP),
     ]
     entree = MSB_WORK
     for nom, modele, npc, think, pos, ent, scale, sortie in etapes:
@@ -222,8 +223,33 @@ def installer():
             log("ERREUR MsbPatch: " + r.stderr)
             sys.exit(1)
         entree = sortie
+    # --- Evenements EMEVD (recette LoR appliquee) --------------------------------
+    # Preuve : 284/284 ennemis vanilla de m11_01 sont references par leur
+    # emevd.dcx (c5430_0000 : 31 refs ; c1001_0006 : 39 refs). Nos records
+    # n'etaient references nulle part = jamais actives = invisibles malgre un
+    # EntityID valide. Recette exacte relue sur LoR (Gale, 2200000) : instr
+    # bank=2004 id=29 arg (id,0) puis 2004 id=5 arg (id,1). On clone les memes
+    # instructions (bytes template du garde c1001_0006) dans l'evenement carte
+    # 11110100, une fois par nouvel id. Aucun octet vanilla ecrit : pur append.
+    EVD_SRC = os.path.join(JEU, "event", "%s.emevd.dcx" % MSB_MAP)
+    EVD_OUT = os.path.join(WORK, "event", "%s.emevd.dcx" % MSB_MAP)
+    os.makedirs(os.path.dirname(EVD_OUT), exist_ok=True)
+    r = subprocess.run([
+        EVD, "append", EVD_SRC, EVD_OUT,
+        "--event", "11110100",
+        "--clone", "89F3100000000000~%d" % PROBE_ENTITE,
+        "--clone", "A8F3100001000000~%d" % PROBE_ENTITE,
+        "--clone", "89F3100000000000~%d" % SIMON_ENTITE,
+        "--clone", "A8F3100001000000~%d" % SIMON_ENTITE,
+    ], capture_output=True, text=True)
+    for _ligne in (r.stdout + r.stderr).strip().splitlines()[-4:]:
+        log("   " + _ligne)
+    if r.returncode != 0 or not os.path.exists(EVD_OUT):
+        log("ERREUR EvdPatch: " + r.stderr)
+        sys.exit(1)
     cibles = _cibles()
     cibles[os.path.join("map", "mapstudio", "%s.msb.dcx" % MSB_MAP)] = MSB_WIP
+    cibles[os.path.join("event", "%s.emevd.dcx" % MSB_MAP)] = EVD_OUT
 
     horo = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     sauvegarde = os.path.join(BACKUP_ROOT, "c5460_" + horo)
