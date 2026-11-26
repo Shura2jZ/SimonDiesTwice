@@ -52,6 +52,10 @@ MSB_MAP = "m11_01_00_00"            # carte du spawn cible
 MSB_ANCIEN = "m20_00_00_00"         # install précédente à nettoyer
 EXEMPLAIRE = "c5430_0000"           # record debout même carte (struct NPC)
 POS = "-111.8,54.0,237.4"           # entre c5430_0000 (3.0 m) et c5060_0001 (3.8 m)
+# EntityID DUTIFER, jamais -1 : 284/285 ennemis vanilla en portent ; -1 (bogue
+# d'ecriture anterieur) = record jamais instancie en jeu -> invisible.
+# Valeur libre dans la carte (max observe 1120623, outil MsbForensics --max-entity).
+ENTITE = 1120624
 
 REGI = [
     # Espace A (apparition) : clones IDENTIQUES du hôte — le pipeline
@@ -191,7 +195,7 @@ def installer():
         os.path.join(RACINE, "_work", "tools", "cs", "MsbPatch.exe"),
         "add", "--record", "SIMON_SPAWN", "--model", "c5460",
         "--npc", "54600000", "--think", "54600000",
-        "--pos", POS, "--at-scale", EXEMPLAIRE, "--entity-id", "-1",
+        "--pos", POS, "--at-scale", EXEMPLAIRE, "--entity-id", str(ENTITE),
         "--in", MSB_WORK, "--out", MSB_WIP], capture_output=True, text=True)
     log("MsbPatch add : %s" % ((r.stdout + r.stderr).strip().splitlines()[-3:]))
     if r.returncode != 0 or not os.path.exists(MSB_WIP):

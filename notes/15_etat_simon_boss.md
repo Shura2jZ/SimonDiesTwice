@@ -91,3 +91,31 @@ Légende : **[F]** vérifié fichier · **[T]** testé/validé outil · **[G]** 
 - Route assumée : idole **« Ashina Castle: Dojo »** (écran d'arrivée ≈ salle intérieure
   étage y=54). [INCONNU] appartenance nom/idole exact — test utilisateur tranchera,
   pivot immédiat possible (positions candidates m11_00 y≈-50 cour).
+
+## 10. Diagnostic invisibilité SIMON_SPAWN (session 2026-11-26, MAJ)
+
+Preuves sur le FICHIER INSTALLE (out `_work/tools/cs/MsbForensics.exe`, relecture
+MSBS + reflection de TOUS les champs + coupe hex + --max-entity) :
+
+1. Record present et seriealise dans mods/.../m11_01_00_00.msb.dcx (offset UTF16
+   0x4fbba0 ; relecture = Parts.Enemies total 285 et non Dummy) : OK.
+2. Section = Parts.Enemies (vraie section NPC ennemi) : OK.
+3. ModelName = "c5460" ; Models.Enemies contient c5460 avec SibPath standard
+   N:\NTC\data\Model\chr\c5460\sib\c5460.sib (meme gabarit que c5430) : OK.
+4. NPCParamID = 54600000, ThinkParamID = 54600000 ; NpcParam row presente ;
+   NpcThinkParam 54600000 = clone + battleGoalID 540000 (chaine Behavior host) : OK.
+5. EntityID **-1 = unique sur 285** (ref c5430_0000 = 1110920) => CAUSE : record
+   jamais instancié par le système d'entités de carte -> invisible (mais parse OK).
+6. Tous autres champs identiques a ref vanilla (Unk1, Gparam, shadow flags,
+   LodParamID, CollisionPartName h012100, Scale 1,1,1, CharaInit -1, SibPath vide)
+   => format strictement identique. Seules diffs legitimes : Nom/Model/NPC/Think/Pos.
+7. Archives c5460 : verifier = 4/4/280 entrees, 0 residu, FLVER = source Simon : OK.
+8. Sol/hauteur : Position Y 4 cm de c5430_0000 meme plancher ; culling/shadow
+   flags conformes ref. Non-exclu en dur = collision mesh (jamais testable hors jeu).
+
+Correction : **EntityID -1 -> 1120624** (max carte 1110920/1120623, libre +1 ; outil
+`MsbForensics --max-entity`). Bug racine : constante `--entity-id -1` codee dans
+`implantation_simon.py installer` (ecrasait les passes manuelles) ; remplacee par la
+constante `ENTITE = 1120624` commentee. Installe : cd6e0c3eaf48 ; 0 record a -1.
+Revert : backup c5460_20261126_111312 (avant = MSB VANILLA + param 182922 +
+nouveaux.txt 6 fichiers).
