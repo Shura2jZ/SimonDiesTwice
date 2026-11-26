@@ -178,3 +178,52 @@ toujours 111e27411731 = l'etat d'avant session ; reinstall = memes hashes
 
 ### 11.6 Interdits respectes
 Aucun record vanilla supprime/modifie (diff hors cibles = 0), aucun evenement vanilla ecrit (append seul, diff = +4 lignes), combat/patterns Genichiro intacts (pas de fichiers events Genichiro dans cibles), autres bosses/cartes intacts, anim/moveset Simon intacts (aucun fichier chr/anbnd modifie depuis l'etat c5460 stable).
+
+## 12. RACINE DES ECHECS PRECEDENTS = ModEngine inactif sous Sekiro 1.6 (session debug approfondi)
+
+**Resultat : ce n'etait ni le MSB ni l'EMEVD.** Les fichiers n'etaient jamais lus par le jeu
+= nos 4 sessions d'echec (Temple, Dojo, EntityID, EMEVD, Tower Lookout) etaient toutes
+invalidées en amont. Cause + correction prouvees par execution.
+
+### 12.1 Environnement audité (verifié fichiers/exec)
+- `sekiro.exe` 1.6.0.0, 68 005 144 o, machine x64, provenance **CODEX** (`steam_emu.ini` présent, `sekiro.cdx` = copie 68 005 144 o, steam_api64 = emu CODEX 366 808 o). Une seule installation (F:\Games…) ; lancé directement (pas d'options Steam).
+- **DLL actives** : `dinput8.dll` (injection) + `dxgi.dll` (hooks graphiques) + dlls internes amd_ags/bink/fmod. **Identités reelles par VersionInfo/exports** :
+  - `dxgi.dll` = **ReShade 5.4.2.1604** (crosire, md5 778213…, mtime 2022) — preuve : ReShade.log « loaded from dxgi.dll ». **Ce n'est PAS le Ultimate Mod Menu** ; le log `SekiroMod_Debug.log` (mtime 25/11 21:28) = ancien run où un traineur dxgi etait chargé, **absent des runs récents** (dxgi = ReShade dans tous les runs de contrôle) → aucun conflit dxgi/dinput8 aujourd'hui (chargeurs distincts : GetModuleFileName CreateFileW hook + DX11 VMT).
+  - `dinput8.dll` = **ModEngine katalash 0.1.16 stock** (614 912 o, md5 F785817A…, export unique `DirectInput8Create`) — present & doublé du system32 (proxy local).
+  - `modengine.ini` conforme (skipLogos=1, useModOverrideDirectory=1, modOverrideDirectory=`\mods`, cacheFilePaths=0, showDebugLog=1 ; backups `.bak_avant_test`/`.bak_showdebug`).
+  - `modenginecrash.log` = dump de modules daté 25/11 (DINPUT8+dxgi charges a ce jour = preuve de lancement historique, pas un crash actuel ; fichier jamais re-ecrit).
+- Structure `mods/` = bien miroir du jeu (chr/event/map/param + tiers Parts/Sound/mtd), DCX valides ; jeu = fichiers **loose** coexistant avec `Data*.bdt`.
+
+### 12.2 Tests d'isolation (une variable à la fois, tous executés)
+| # | Test | Resultat | Verdict |
+|---|---|---|---|
+| 1 | Snapshot modules du processus sekiro pendant run (aucun input) | `DINPUT8.dll` du jeu ET `dxgi.dll` du jeu charges ; SekiroMod absent | injection DLL OK |
+| 2 | skipLogos 1→0 A/B ecran titre | images identiques (timing) | non concluant, abandonne |
+| 3 | **Appat vanilla** : bundle `msg/engus/menu.msgbnd.dcx` patché (`PRESS ANY BUTTON`→`MODENGINE IS OK!`, tailles octets identiques), installe dans `mods/` | **toujours « PRESS ANY BUTTON »** | override mods/ NON applique |
+| 4 | **Controle fichier jeu** : meme bundle ecrit DANS le jeu (backup verifié md5), appat retire, run | **toujours « PRESS ANY BUTTON »** | le jeu ne lit pas le loose = lit les BDT via hook d'archives |
+| 5 | Retrait d'un seul param `dxgi.dll` (ReShade off) + meme appat | **« MODENGINE IS OK! » affiche a l'ecran-titre** (capture `testA_sans_dxgi.png`) | **CAUSE : la presence de dxgi.dll fait perdre au stock 0.1.16 la course d'installation de son hook fichier (Bug 1 connu)** — silencieux, aucun log, exactement le symptome « mods non chargés » |
+| 6 | Source upstream clonee (`katalash/ModEngine`) | `CheckSekiroVersion()` n'accepte que 1.02/1.03 + refuse si `sekiro.cdx` existe + console `std::cin.ignore()` ; hook pose depuis `DllMain` via detour `SteamAPI_Init` = race | Bug 2 confirme aussi present pour 1.6, contourne/fait sauter |
+| 7 | Repos du fix (piusryan, 0 fork 0 release) => **build maison** : sources complete, MSVC absent/non-admin → **zig 0.13.0 portable** (`zig cc/c++ -target x86_64-windows-gnu`), shim `concurrent_unordered_set.h` (PPL mise en veilleuse), 3 casts `reinterpret_cast<LPVOID>` ajoutes (extension MSVC), `extern "C"` sur `DirectInput8Create` (def .def = nom C brut) | `dinput8_patched.dll` 423 936 o, export `DirectInput8Create`, marqueurs fix presents (Hook attempt/modengine_load.log/INVENTORY/OVERRIDE OK/…), `Unsupported version` ABSENT | build OK |
+| 8 | **Installation** : dinput8.dll stock → backup `.bak_stock_0.1.16` (614 912 o, md5 F785817A conserve) ; nouveau 423 936 o (md5 1F62FBE3BA32) ; dxgi/ReShade **conservé actif** | — | correction + rollback 1 commande |
+| 9 | Run fix + **sans dxgi** + appat | capture `PREUVE_FINALE.png` = **« MODENGINE IS OK! »** + `modengine_load.log` : `Hook attempt 1/10`, `Detected game as Sekiro`, `Hooking archive loader functions`, `Hooking CreateFileW`, **INVENTORY liste tous nos fichiers** (mapstudio/m11_01… msb.dcx, event/… emevd.dcx, chr/c5460.*, param/…), `[ArchiveHook] Looking for override file …\mods\msg\engus\…` | **boucle mods/→hook→rendu PRUVEE de bout en bout** |
+| 10 | Run fix + **avec dxgi** (cohabitation) | `modengine_load.log` : attempt 1/10, hooks archive+CreateFileW poses, **ArchiveHook intercepte des `data1:/…` reels** (param/drawparam/menu), inventory complet : **ModEngine marche avec ReShade charge** | cohabitation OK ; **regression connue** : boot ralenti (ReShade recompile ses effets ~14 restants encore a t=150 s vs <20 s avant-fix ⇒ cout du logger sur les rafales CreateFile de ReShade, a mitiger) |
+| 11 | Nettoyage | appat `mods/msg/` supprime ; fichier jeu `menu.msgbnd.dcx` = md5 vanilla 2e0be99f2488 ; `_work/…/vanillatest/menu.msgbnd.ORIG.dcx` = backup durable | vanilla + overlay propres |
+
+### 12.3 Corrections livrees (etat final)
+- `F:\Games\Sekiro - Shadows Die Twice\dinput8.dll` = **fix worker-thread compile** (backup : `dinput8.dll.bak_stock_0.1.16`).
+- `dxgi.dll` (ReShade) **conserves** — le trainer n'a pas ete sacrifie.
+- Toujours installe : MSB (PROBE_VANILLA + SIMON_LOOKOUT, ids 1120625/626, positions §11.3), EMEVD +4 instr, archives c5460, gameparam.
+- Source/build : `_work/modengine_fix/repo` (fork piusryan, patches locaux decrits §12.2 n°7) + toolchain `_work/toolchains/zig-windows-x86_64-0.13.0/`.
+
+**REVERT (une commande, ordre inverse) :**
+```
+cp "/f/Games/Sekiro - Shadows Die Twice/dinput8.dll.bak_stock_0.1.16" "/f/Games/Sekiro - Shadows Die Twice/dinput8.dll"
+python tools/implantation_simon.py reverter       # + retire l'event/msb si besoin
+```
+(`dxgi.dll` n'a jamais ete modifie durablement ; les restes temporaires du test appat ont ete nettoyes.)
+
+### 12.4 A surveiller / limites connues
+- Boot **ralenti** avec ReShade actif apres fix (compilation d'effets) : si genant pour un test rapide, renommer temporairement `dxgi.dll` (commande ci-dessous) = boot rapide, aucun gain perdu pour le test.
+- `modengine_load.log` reecrit a chaque lancement (CREATE_ALWAYS) = **le diagnostic d'execution est maintenant l'artefact a lire** :
+  `Hook attempt 1/10` + `INVENTORY … n file(s)` + `[ArchiveHook] Looking for override file …\mods\…` = preuve d'activation ; `OVERRIDE OK … served` = preuve de substitution effective.
+- Aucune preuve encore in-game de nos records NPC (execution des instructions EMEVD, rendu c5460) = **test final §11.5** a faire desormais sur une base ou le mod est enfin charge.
