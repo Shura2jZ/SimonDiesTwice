@@ -15,8 +15,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import soulsutil
 import bnd4_build
 
-VAN = r"F:\Games\Sekiro - Shadows Die Twice\chr\c5400.chrbnd.dcx"
-NOT = r"F:\Games\Sekiro - Shadows Die Twice\mods\chr\c5400.chrbnd.dcx"
+VAN = r"E:\Games\Sekiro - Shadows Die Twice\chr\c5400.chrbnd.dcx"
+NOT = r"E:\Games\Sekiro - Shadows Die Twice\mods\chr\c5400.chrbnd.dcx"
 
 
 def entrees(dcx):

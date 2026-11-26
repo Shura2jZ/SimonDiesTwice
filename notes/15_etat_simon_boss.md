@@ -210,7 +210,7 @@ invalidées en amont. Cause + correction prouvees par execution.
 | 11 | Nettoyage | appat `mods/msg/` supprime ; fichier jeu `menu.msgbnd.dcx` = md5 vanilla 2e0be99f2488 ; `_work/…/vanillatest/menu.msgbnd.ORIG.dcx` = backup durable | vanilla + overlay propres |
 
 ### 12.3 Corrections livrees (etat final)
-- `F:\Games\Sekiro - Shadows Die Twice\dinput8.dll` = **fix worker-thread compile** (backup : `dinput8.dll.bak_stock_0.1.16`).
+- `E:\Games\Sekiro - Shadows Die Twice\dinput8.dll` = **fix worker-thread compile** (backup : `dinput8.dll.bak_stock_0.1.16`).
 - `dxgi.dll` (ReShade) **conserves** — le trainer n'a pas ete sacrifie.
 - Toujours installe : MSB (PROBE_VANILLA + SIMON_LOOKOUT, ids 1120625/626, positions §11.3), EMEVD +4 instr, archives c5460, gameparam.
 - Source/build : `_work/modengine_fix/repo` (fork piusryan, patches locaux decrits §12.2 n°7) + toolchain `_work/toolchains/zig-windows-x86_64-0.13.0/`.

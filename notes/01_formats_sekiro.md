@@ -151,7 +151,7 @@ Les 10 maps sont dans `map\mapstudio\m10..m25_*.msb.dcx`.
 
 ## 11. État de l'extraction (fait)
 
-UXM a dépaqueté **tout** dans `F:\Games\Sekiro - Shadows Die Twice\` (12,3 Go en clair) :
+UXM a dépaqueté **tout** dans `E:\Games\Sekiro - Shadows Die Twice\` (12,3 Go en clair) :
 
 | dossier | fichiers | taille |
 |---|---|---|

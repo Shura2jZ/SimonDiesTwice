@@ -22,7 +22,7 @@ sys.path.insert(0, ICI)
 import soulsutil
 import bnd4_build
 
-G = r"F:\Games\Sekiro - Shadows Die Twice\chr"
+G = r"E:\Games\Sekiro - Shadows Die Twice\chr"
 
 
 def main():

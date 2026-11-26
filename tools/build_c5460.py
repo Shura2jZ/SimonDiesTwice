@@ -45,7 +45,7 @@ import bnd4_parse
 import dcx_build
 import soulsutil
 
-JEU = r"F:/Games/Sekiro - Shadows Die Twice"
+JEU = r"E:/Games/Sekiro - Shadows Die Twice"
 ANCIEN = "c5400"
 NOUVEAU = "c5460"
 SRC = "chr/%s.%s.dcx" % (ANCIEN, "%s")

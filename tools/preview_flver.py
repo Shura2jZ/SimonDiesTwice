@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bnd4_build
 import soulsutil
 
-GAME = r"F:\Games\Sekiro - Shadows Die Twice"
+GAME = r"E:\Games\Sekiro - Shadows Die Twice"
 DEFAULT_MODEL = os.path.join(ROOT, "_work", "mod", "chr", "c5400.chrbnd.dcx")
 DEFAULT_TEXTURES = os.path.join(ROOT, "_work", "mod", "chr", "c5409.texbnd.dcx")
 CS = os.path.join(ROOT, "_work", "tools", "cs")

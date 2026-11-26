@@ -180,7 +180,7 @@ installé : `0x40 = 509 832` = exactement la somme mesurée par `FlverFacesets.e
 
 ## État installé
 
-* `F:\Games\Sekiro - Shadows Die Twice\mods\chr\c5400.chrbnd.dcx`
+* `E:\Games\Sekiro - Shadows Die Twice\mods\chr\c5400.chrbnd.dcx`
   — 3 805 737 octets, sha256 `2fed2103dc610c35…`
 * `c5400.flver` — 12 129 840 octets, sha256 `f2236db63b0e7771…`
 * l'enroulement du FLVER **extrait de l'archive installée** a été revérifié :

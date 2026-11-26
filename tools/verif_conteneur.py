@@ -19,7 +19,7 @@ import bnd4_build         # noqa: E402
 import dcx_build          # noqa: E402
 
 PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME = r"F:\Games\Sekiro - Shadows Die Twice"
+GAME = r"E:\Games\Sekiro - Shadows Die Twice"
 
 VANILLE_DCX = os.path.join(GAME, "chr", "c5400.chrbnd.dcx")
 NOTRE_DCX = os.path.join(PROJ, "_work", "mod", "chr", "c5400.chrbnd.dcx")

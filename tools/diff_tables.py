@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import soulsutil      # noqa: E402
 import bnd4_build     # noqa: E402
 
-GAME = r"F:\Games\Sekiro - Shadows Die Twice"
+GAME = r"E:\Games\Sekiro - Shadows Die Twice"
 PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 

@@ -8,7 +8,7 @@
 | Élément | Valeur |
 |---|---|
 | Dossier projet | `C:\Users\marou\Documents\Default Project` (vide au départ, pas de git) |
-| Sekiro | `F:\Games\Sekiro - Shadows Die Twice` |
+| Sekiro | `E:\Games\Sekiro - Shadows Die Twice` |
 | Clair Obscur | `E:\Games\Clair Obscur - Expedition 33` |
 | Python | 3.14.5 (`%LOCALAPPDATA%\Python\pythoncore-3.14-64`) |
 | OS | Windows |

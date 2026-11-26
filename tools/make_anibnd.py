@@ -25,7 +25,7 @@ import bnd4_build      # noqa: E402
 import dcx_build       # noqa: E402
 import soulsutil       # noqa: E402
 
-GAME = r"F:\Games\Sekiro - Shadows Die Twice"
+GAME = r"E:\Games\Sekiro - Shadows Die Twice"
 VANILLE = os.path.join(GAME, "chr", "c5400.anibnd.dcx")
 CIBLE_MODS = os.path.join(GAME, "mods", "chr", "c5400.anibnd.dcx")
 SORTIE = os.path.join(RACINE, "_work", "mod", "chr", "c5400.anibnd.dcx")

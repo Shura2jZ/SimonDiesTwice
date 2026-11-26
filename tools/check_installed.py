@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import soulsutil
 import bnd4_build
 
-DEFAUT = r"F:\Games\Sekiro - Shadows Die Twice\mods\chr\c5400.chrbnd.dcx"
+DEFAUT = r"E:\Games\Sekiro - Shadows Die Twice\mods\chr\c5400.chrbnd.dcx"
 
 
 def main():

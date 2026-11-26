@@ -36,7 +36,7 @@ import bnd4_build
 import dcx_build
 import soulsutil
 
-JEU = r"F:/Games/Sekiro - Shadows Die Twice"
+JEU = r"E:/Games/Sekiro - Shadows Die Twice"
 WORK = os.path.join(RACINE, "_work", "simon_boss")
 PARAM_DIR = os.path.join(WORK, "param")
 CHR_SRC = os.path.join(WORK, "chr")

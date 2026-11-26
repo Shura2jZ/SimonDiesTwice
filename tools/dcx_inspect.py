@@ -25,7 +25,7 @@ import struct
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from oodle import Oodle
 
-OODLE_DLL = r"F:\Games\Sekiro - Shadows Die Twice\oo2core_6_win64.dll"
+OODLE_DLL = r"E:\Games\Sekiro - Shadows Die Twice\oo2core_6_win64.dll"
 
 
 def hexdump(data: bytes, label: str = "") -> None:

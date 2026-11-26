@@ -3,7 +3,7 @@
 Objectif : **prouver** quel identifiant de personnage Sekiro correspond au boss final
 « Isshin, the Sword Saint » (剣聖 = *Kensei*), pour ne pas modifier le mauvais modèle.
 
-Les archives vanilla sont extraites en clair dans `F:\Games\Sekiro - Shadows Die Twice\`.
+Les archives vanilla sont extraites en clair dans `E:\Games\Sekiro - Shadows Die Twice\`.
 
 ---
 

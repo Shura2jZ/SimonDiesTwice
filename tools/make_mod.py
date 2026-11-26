@@ -36,7 +36,7 @@ import bnd4_build
 import dcx_build
 import gx_fix
 
-GAME_ROOT = r"F:\Games\Sekiro - Shadows Die Twice"
+GAME_ROOT = r"E:\Games\Sekiro - Shadows Die Twice"
 VANILLA_CHRBND = os.path.join(GAME_ROOT, "chr", "c5400.chrbnd.dcx")
 INNER_NAME = "c5400.flver"
 INNER_CLM2 = "c5400_c.clm2"
