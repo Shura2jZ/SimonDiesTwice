@@ -56,6 +56,16 @@ POS = "-111.8,54.0,237.4"           # entre c5430_0000 (3.0 m) et c5060_0001 (3.
 # d'ecriture anterieur) = record jamais instancie en jeu -> invisible.
 # Valeur libre dans la carte (max observe 1120623, outil MsbForensics --max-entity).
 ENTITE = 1120624
+# Test B : sonde meme structure, modele vanilla visible de la salle (c1001)
+PROBE_NOM    = "PROBE_VANILLA"
+PROBE_MODELE = "c1001"
+PROBE_NPC    = 10010000
+PROBE_THINK  = 10010000
+PROBE_ENTITE = 1120625
+# Toit de Genichiro (preuve : tuiles m015321/22/32 y=61.6, bandes u=x+z
+# 109..139 x v=x-z -342..-360 -> plateau ~21x13 m centre (-113.4, 61.6, 237.6))
+TOIT_POS   = "-113.4,61.6,237.6"
+TOIT_ENTITE = 1120626
 
 REGI = [
     # Espace A (apparition) : clones IDENTIQUES du hôte — le pipeline
@@ -191,16 +201,25 @@ def installer():
     os.makedirs(os.path.dirname(MSB_WORK), exist_ok=True)
     if not os.path.exists(MSB_WORK):
         shutil.copy2(vanilla, MSB_WORK)
-    r = subprocess.run([
-        os.path.join(RACINE, "_work", "tools", "cs", "MsbPatch.exe"),
-        "add", "--record", "SIMON_SPAWN", "--model", "c5460",
-        "--npc", "54600000", "--think", "54600000",
-        "--pos", POS, "--at-scale", EXEMPLAIRE, "--entity-id", str(ENTITE),
-        "--in", MSB_WORK, "--out", MSB_WIP], capture_output=True, text=True)
-    log("MsbPatch add : %s" % ((r.stdout + r.stderr).strip().splitlines()[-3:]))
-    if r.returncode != 0 or not os.path.exists(MSB_WIP):
-        log("ERREUR MsbPatch: " + r.stderr)
-        sys.exit(1)
+    # chaîne : SIMON_SPAWN (dojo) -> PROBE_VANILLA (mêmes coord.) -> SIMON_ROOF (toit)
+    etapes = [
+        ("SIMON_SPAWN", "c5460", "54600000", "54600000", POS, ENTITE, EXEMPLAIRE, MSB_WIP + ".e1"),
+        (PROBE_NOM, PROBE_MODELE, str(PROBE_NPC), str(PROBE_THINK), POS, PROBE_ENTITE, EXEMPLAIRE, MSB_WIP + ".e2"),
+        ("SIMON_ROOF", "c5460", "54600000", "54600000", TOIT_POS, TOIT_ENTITE, EXEMPLAIRE, MSB_WIP),
+    ]
+    entree = MSB_WORK
+    for nom, modele, npc, think, pos, ent, scale, sortie in etapes:
+        r = subprocess.run([
+            os.path.join(RACINE, "_work", "tools", "cs", "MsbPatch.exe"),
+            "add", "--record", nom, "--model", modele,
+            "--npc", npc, "--think", think,
+            "--pos", pos, "--at-scale", scale, "--entity-id", str(ent),
+            "--in", entree, "--out", sortie], capture_output=True, text=True)
+        log("MsbPatch add %s : %s" % (nom, (r.stdout + r.stderr).strip().splitlines()[-3:]))
+        if r.returncode != 0 or not os.path.exists(sortie):
+            log("ERREUR MsbPatch: " + r.stderr)
+            sys.exit(1)
+        entree = sortie
     cibles = _cibles()
     cibles[os.path.join("map", "mapstudio", "%s.msb.dcx" % MSB_MAP)] = MSB_WIP
 
