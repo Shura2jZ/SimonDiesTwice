@@ -160,7 +160,12 @@ Sur la branche **diag-apparition** :
 
     python tools/implantation_simon.py reverter
 
-Backup courant `_work/mod_backup/c5460_20261126_154405/` : `nouveaux.txt` = (event, map) supprimes ; `map/mapstudio/m11_01_00_00.msb.dcx.avant` = etat precedent ; chr/param 'inchange' = pas de backup. `installer` repart du vanilla : regeneration deterministe (memes hashes).
+Backup courant **round-trip prouvé** : `c5460_20261126_155136/` (la sequence reverter
+puis installer a ete executee reellement : revert = 2 fichiers restaures, msb
+toujours 111e27411731 = l'etat d'avant session ; reinstall = memes hashes
+770d72116256 / d1e246ad85e6, 4 chr+param `inchange`) ; precedent =
+`c5460_20261126_154405/`. `nouveaux.txt` = (event, map), supprimes par reverter ;
+`.avant` = etat precedent du MSB (111e27411731). `installer` repart du vanilla.
 
 ### 11.5 Protocole de test (session unique)
 1. (etat deja installe, sinon) `python tools/implantation_simon.py reverter` puis `installer`.
